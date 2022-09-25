@@ -1,0 +1,33 @@
+GET http://localhost:3000/students
+
+###
+
+POST http://localhost:3000/students
+Content-Type: application/json
+
+{
+    "rollno": "IIT2023083",
+    "name": "Diego Maradona",
+    "email": "meenaharsh2002@gmail.com"
+}
+
+###
+
+POST http://localhost:3000/interviews/create
+Content-Type: application/json
+
+{
+  "title": "Google",
+  "starttime": "2022-09-29T14:00",
+  "endtime": "2022-09-29T16:00",
+  "members": "IIT2019005"
+}
+
+###
+
+POST http://localhost:3000/interviews/interview/633063ef66795b40e4f5363c
+Content-Type: application/json
+
+{
+  "students": ["IIT2019005", "IIT2019097"]
+}

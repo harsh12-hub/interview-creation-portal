@@ -1,0 +1,110 @@
+<%- include('partials/header') %>
+<body class = "tempnormal">
+    <!-- navbar header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbar">
+                <%- include('partials/navlinks') %>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Interview Dashboard -->
+    <div class="interviewtime py-4 text-center">
+        <div class="container">
+            <h2 class="display-1 my-4">Interviews</h2>
+        </div>
+    </div>
+
+    <!-- Interview List View -->
+    <div class="container text-center interview-id mb-4">
+        <div class="row">
+            <div class="col">
+                <div class="short-this">
+                    <select name="" id="interview_list_main" class="form-select">
+                            <option selected value =0>Select Interview</option>
+                            <% let list = '';
+                            for(let i=0;i<locals.interview.length;i++){
+                                list += `<option value=${locals.interview[i]._id}>${locals.interview[i].title}</option>`;
+                            }%>
+                            <%- list %>
+                        </select>
+                        
+                    </select>
+    </div>
+
+    <!-- Card Containing Interview and Member Details -->
+    <div class="container text-center interview-info">
+        <div class="card border-dark mb-3">
+            <div class="card-header text-uppercase">
+                <div class="row">
+                    <label for="interviewid" class="col-sm-2 col-form-label col-form-label-sm">Interview ID</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control form-control-sm" id="interview_id" placeholder="Interview ID">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-text text-start">
+                    <div class="row mb-3">
+                        <!-- interview info -->
+                        <form id = "interview_form" action="">
+                        <!-- <div class="col"> -->
+                            <div class="row mb-3">
+                                <label for="on_date" class="col-sm-2 col-form-label col-form-label-sm">Date</label>
+                                <div class="col-sm-10">
+                                  <input type="date" class="form-control form-control-sm" id="on_date" placeholder="Date">
+                                </div>
+                             </div>
+                             <div class="row mb-3">
+                                <label for="starttime" class="col-sm-2 col-form-label col-form-label-sm">Start Time</label>
+                                <div class="col-sm-10">
+                                  <input type="time" class="form-control form-control-sm" id="starttime" placeholder="Start Time">
+                                </div>
+                             </div>
+                             <div class="row mb-3">
+                                <label for="endtime" class="col-sm-2 col-form-label col-form-label-sm">End Time</label>
+                                <div class="col-sm-10">
+                                    <input type="time" class="form-control form-control-sm" id="endtime" placeholder="End Time">
+                                </div>
+                             </div>
+                             <div class="row mb-3">
+                                <label for="participants" class="col-sm-2 col-form-label col-form-label-sm">Participants</label>
+                                <div class="col-sm-10">
+                                  <select class="form-control form-control-sm" id="participants" multiple>
+                                    <option value="0">---</option>
+                                    <option value="1">---</option>
+                                  </select>
+                                </div>
+                             </div>
+                    </div>
+                    <div class="input-group text-danger">
+                        <% if(locals.errorMessage!='') { %>
+                            <%- locals.errorMessage %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col">
+                        <button class="btn btn-light btn-outline-dark edit" type="submit"> <i class="bi bi-pencil db"></i> Edit Interview Info</button>
+                        <button class="btn btn-light btn-outline-dark d-none save" type="submit"><i class="bi bi-save db"></i> Save Interview Info</button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-dark"><a href = '/interviews/create'><i class="bi bi-telephone db"></i> Schedule New Interview</a></button>
+                    </div>
+                    <div class="col">
+                        <button id="edit_button" class="btn btn-outline-dark"><i class="bi bi-envelope db"></i> Add/Remove Participants</button>
+                    </div>
+                </div>
+                
+            </form>
+            </div>
+        </div>
+    </div>
+    <script src="./scripts/dashboard.js"></script>
+</body>

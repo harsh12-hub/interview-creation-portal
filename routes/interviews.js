@@ -203,10 +203,6 @@ router.patch('/interview/:id', async (req, res) => {
 router.patch('/interview_add/:id', async (req, res) => {
     const interview = await Interview.findOne({_id: req.params.id})
     const students = await Student.find({_id: {$in: req.body.students}})
-    let busy = []
-    for (let i = 0; i<students.length; i++){
-        busy.push(students[i].interviews)
-    }
 
     // console.log(interview)
     // console.log(students)
@@ -219,8 +215,8 @@ router.patch('/interview_add/:id', async (req, res) => {
     for (let i = 0; i<students.length; i++){
         if(!flag)
         break
-        for (let j = 0; j<students[i].busy.length; j++){
-            if ((students[i].busy[j].start_time.getTime()<=starttime.getTime() && students[i].busy[j].end_time.getTime()>=starttime.getTime()) || (students[i].busy[j].start_time.getTime()<=endtime.getTime() && students[i].busy[j].end_time.getTime()>=endtime.getTime()) || (students[i].busy[j].start_time.getTime()>=starttime.getTime() && students[i].busy[j].end_time.getTime()<=endtime.getTime())){
+        for (let j = 0; j<students[i].interviews.length; j++){
+            if (((students[i].interviews[j].start_time.getTime()<=starttime.getTime() && students[i].interviews[j].end_time.getTime()>=starttime.getTime()) || (students[i].interviews[j].start_time.getTime()<=endtime.getTime() && students[i].interviews[j].end_time.getTime()>=endtime.getTime()) || (students[i].interviews[j].start_time.getTime()>=starttime.getTime() && students[i].interviews[j].end_time.getTime()<=endtime.getTime()))&&students[i].interviews[j]._id!=req.params.id){
                 flag = false
                 res.status(400).json({problem: `Error: ${students[i]._id} already has an interview scheduled in that timeframe`})
             }
@@ -235,17 +231,63 @@ router.patch('/interview_add/:id', async (req, res) => {
                 _id: req.params.id
             },
             {
-                members: students
+                members: req.body.students
             },
             {
                 upsert: false
             }
         )
 
-        
-    }
+        const all_students = await Student.find()
 
-    res.status(200).json({problem: null})
+
+        for (let i = 0; i<all_students.length; i++){
+            new_int = all_students[i].interviews
+            var index = -1
+            for (let j = 0; j<new_int.length; j++){
+                if (new_int[j]._id==req.params.id){
+                    // new_int[j].start_time=starttime
+                    // new_int[j].end_time=endtime
+                    index = j
+                }
+            }
+
+            if (index==-1){
+                console.log('here1')
+                if (req.body.students.includes(all_students[i]._id)){
+                    new_int.push(
+                        {
+                            _id: req.params.id,
+                            start_time: starttime,
+                            end_time: endtime
+                        }
+                    )
+                }
+            }
+
+            else {
+                console.log('here2')
+                if (!req.body.students.includes(all_students[i]._id)){
+                    new_int.splice(index, 1)
+                }
+            }
+
+            console.log(all_students[i].name, index, new_int)
+
+            await Student.findOneAndUpdate(
+                {
+                    _id: all_students[i]._id
+                },
+                {
+                    interviews: new_int
+                },
+                {
+                    upsert: false
+                }
+            )
+        }
+        res.status(200).json({problem: null})
+    }
 })
 
 module.exports = router

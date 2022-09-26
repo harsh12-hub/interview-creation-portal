@@ -6,9 +6,9 @@ POST http://localhost:3000/students
 Content-Type: application/json
 
 {
-    "rollno": "IIT2023083",
-    "name": "Diego Maradona",
-    "email": "meenaharsh2002@gmail.com"
+    "rollno": "IIT2019097",
+    "name": "Harsh Sharma",
+    "interviews": {}
 }
 
 ###

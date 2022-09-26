@@ -90,8 +90,8 @@ router.post('/create', async (req, res) => {
     for (let i = 0; i<students.length; i++){
         if(!flag)
         break
-        for (let j = 0; j<students[i].busy.length; j++){
-            if ((students[i].busy[j][0].getTime()<=starttime.getTime() && students[i].busy[j][1].getTime()>=starttime.getTime()) || (students[i].busy[j][0].getTime()<=endtime.getTime() && students[i].busy[j][1].getTime()>=endtime.getTime()) || (students[i].busy[j][0].getTime()>=starttime.getTime() && students[i].busy[j][0].getTime()<=endtime.getTime())){
+        for (let j = 0; j<students[i].interviews.length; j++){
+            if ((students[i].interviews[j].start_time.getTime()<=starttime.getTime() && students[i].interviews[j].end_time.getTime()>=starttime.getTime()) || (students[i].interviews[j].start_time.getTime()<=endtime.getTime() && students[i].interviews[j].end_time.getTime()>=endtime.getTime()) || (students[i].interviews[j].start_time.getTime()>=starttime.getTime() && students[i].interviews[j].start_time.getTime()<=endtime.getTime())){
                 flag = false
                 res.render('create', {students:all_students, problem: `Error: ${students[i]._id} already has an interview scheduled in that timeframe`, old_body: req.body})
             }
@@ -111,7 +111,15 @@ router.post('/create', async (req, res) => {
             const newInterview = await interview.save()
             for (let i= 0; i <members.length; i++){
                 var filter = {_id: members[i]}
-                var update = {$push: {interviews: newInterview._id.toString(), busy: [starttime, endtime]}}
+                var update = {
+                    $push: {
+                        interviews: {
+                                _id: newInterview._id.toString(),
+                                start_time: starttime,
+                                end_time: endtime
+                        }
+                    }
+                }
                 await Student.findOneAndUpdate(filter, update)
             } 
         } catch (err) {
@@ -132,24 +140,112 @@ router.get('/edit/:id', async (req, res) => {
 
 router.patch('/interview/:id', async (req, res) => {
     const interview = await Interview.findOne({_id: req.params.id})
+    const students = await Student.find({_id: interview.members})
 
-    const starttime = new Date(req.body.year, req.body.month, req.body.day, req.body.shours, req.body.sminutes, 0, 0)
-    const endtime = new Date(req.body.year, req.body.month, req.body.day, req.body.ehours, req.body.eminutes, 0, 0)
-    
-    await Interview.findOneAndUpdate(
-        {
-            _id: req.params.id
-        },
-        {
-            start_time: starttime,
-            end_time: endtime
-        },
-        {
-            upsert: false
+    const starttime = new Date(req.body.year, req.body.month-1, req.body.day, req.body.shours, req.body.sminutes, 0, 0)
+    const endtime = new Date(req.body.year, req.body.month-1, req.body.day, req.body.ehours, req.body.eminutes, 0, 0)
+
+    var flag = true
+
+    for (let i = 0; i<students.length; i++){
+        if(!flag)
+        break
+        for (let j = 0; j<students[i].interviews.length; j++){
+            if (((students[i].interviews[j].start_time.getTime()<=starttime.getTime() && students[i].interviews[j].end_time.getTime()>=starttime.getTime()) || (students[i].interviews[j].start_time.getTime()<=endtime.getTime() && students[i].interviews[j].end_time.getTime()>=endtime.getTime()) || (students[i].interviews[j].start_time.getTime()>=starttime.getTime() && students[i].interviews[j].start_time.getTime()<=endtime.getTime()))&&students[i].interviews[j]._id!=req.params.id){
+                flag = false
+                res.status(400).json({problem: `Error: ${students[i]._id} already has an interview scheduled in that timeframe`})
+            }
+            if(!flag)
+            break
         }
-    )
+    }
 
-    res.status(200)
+    if(flag){
+        await Interview.findOneAndUpdate(
+            {
+                _id: req.params.id
+            },
+            {
+                start_time: starttime,
+                end_time: endtime
+            },
+            {
+                upsert: false
+            }
+        )
+
+        for (let i = 0; i<students.length; i++){
+            new_int = students[i].interviews
+            for (let j = 0; j<new_int.length; j++){
+                if (new_int[j]._id==req.params.id){
+                    new_int[j].start_time=starttime
+                    new_int[j].end_time=endtime
+                }
+            }
+
+            await Student.findOneAndUpdate(
+                {
+                    _id: students[i]._id
+                },
+                {
+                    interviews: new_int
+                },
+                {
+                    upsert: false
+                }
+            )
+        }
+    
+        res.status(200).json({problem: null})
+    }    
+})
+
+router.patch('/interview_add/:id', async (req, res) => {
+    const interview = await Interview.findOne({_id: req.params.id})
+    const students = await Student.find({_id: {$in: req.body.students}})
+    let busy = []
+    for (let i = 0; i<students.length; i++){
+        busy.push(students[i].interviews)
+    }
+
+    // console.log(interview)
+    // console.log(students)
+
+    var flag = true
+
+    const starttime = interview.start_time
+    const endtime = interview.end_time
+
+    for (let i = 0; i<students.length; i++){
+        if(!flag)
+        break
+        for (let j = 0; j<students[i].busy.length; j++){
+            if ((students[i].busy[j].start_time.getTime()<=starttime.getTime() && students[i].busy[j].end_time.getTime()>=starttime.getTime()) || (students[i].busy[j].start_time.getTime()<=endtime.getTime() && students[i].busy[j].end_time.getTime()>=endtime.getTime()) || (students[i].busy[j].start_time.getTime()>=starttime.getTime() && students[i].busy[j].end_time.getTime()<=endtime.getTime())){
+                flag = false
+                res.status(400).json({problem: `Error: ${students[i]._id} already has an interview scheduled in that timeframe`})
+            }
+            if(!flag)
+            break
+        }
+    }
+
+    if (flag){
+        await Interview.findOneAndUpdate(
+            {
+                _id: req.params.id
+            },
+            {
+                members: students
+            },
+            {
+                upsert: false
+            }
+        )
+
+        
+    }
+
+    res.status(200).json({problem: null})
 })
 
 module.exports = router

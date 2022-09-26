@@ -9,15 +9,9 @@ const studentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    email: {
-        type: String,
-        required: true
-    },
     interviews: {
         type: Array,
-    },
-    busy: {
-        type: Array,
+        required: true
     }
 })
 

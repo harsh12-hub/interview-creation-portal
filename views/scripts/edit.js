@@ -27,16 +27,20 @@ submit.addEventListener('click', async e=>{
     else{
         temp = window.location.href.split('/')
         // console.log(new_list)
-        await fetch(`http://localhost:3000/interview/${temp[temp.length-1]}`, {
+        await fetch(`http://localhost:3000/interviews/interview_add/${temp[temp.length-1]}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: {
+            body: JSON.stringify({
                 students: fin_list
-            }
-        }).then(res => response = res)
-
-        console.log(response.body)
+            })
+        }).then(res => res.json())
+        .then(data => {
+            if (!data.problem)
+            window.location.replace('http://localhost:3000/interviews')
+            else
+            errors.innerHTML=data.problem
+        })
     }
 })

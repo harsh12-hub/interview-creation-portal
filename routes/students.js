@@ -17,7 +17,7 @@ router.post('/', async(req, res) => {
     const student = new Student({
         _id: req.body.rollno,
         name: req.body.name,
-        email: req.body.email
+        interviews: req.body.interviews
     })
     try {
         const newStudent = await student.save()

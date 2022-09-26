@@ -45,22 +45,35 @@ save.addEventListener('click',async e=>{
         ip.disabled=true;
         changes.push(ip.value)
     })
-    let finalChanges = JSON.stringify(changes)
-    await fetch(`http://localhost:3000/interview/${finalChanges[0]}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: {
-                year: parseInt(finalChanges[1].split('-')[0]),
-                month: parseInt(finalChanges[1].split('-')[1]),
-                day: parseInt(finalChanges[1].split('-')[2]),
-                shours: parseInt(finalChanges[2].split(':')[0]),
-                sminutes: parseInt(finalChanges[2].split(':')[1]),
-                ehours: parseInt(finalChanges[3].split(':')[0]),
-                eminutes: parseInt(finalChanges[3].split(':')[1]),
-            }
-        }).then(res => response = res)
+    let finalChanges = changes
+    // console.log(finalChanges[1])
+
+    body = {
+        "year": parseInt(finalChanges[1].split('-')[0]),
+        "month": parseInt(finalChanges[1].split('-')[1]),
+        "day": parseInt(finalChanges[1].split('-')[2]),
+        "shours": parseInt(finalChanges[2].split(':')[0]),
+        "sminutes": parseInt(finalChanges[2].split(':')[1]),
+        "ehours": parseInt(finalChanges[3].split(':')[0]),
+        "eminutes": parseInt(finalChanges[3].split(':')[1])
+    }
+    // console.log(body)
+
+    
+    await fetch(`http://localhost:3000/interviews/interview/${finalChanges[0]}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    }).then(res => res.json())
+    .then(data => {
+        
+        if (!data.problem)
+            location.reload()
+        else
+            errors.innerHTML=data.problem
+    })
 })
 
 // change interview
